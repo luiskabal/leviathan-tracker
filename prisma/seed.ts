@@ -109,30 +109,49 @@ for (const [model, url, scraperType, selectors] of chileSources) {
   });
 }
 
-const examples = [
-  ['Newegg', 'https://www.newegg.com/', 'US'],
-  ['B&H', 'https://www.bhphotovideo.com/', 'US'],
-  ['Micro Center', 'https://www.microcenter.com/', 'US'],
-  ['Amazon', 'https://www.amazon.com/', 'US'],
-  ['Generic example', 'https://example.com/replace-with-product-url', 'US'],
+const verifiedUsSources = [
+  [
+    'Newegg',
+    'https://www.newegg.com/g-skill-trident-z5-neo-rgb-series-128gb-2-x-64gb-ddr5-6000-pc5-48000-cas-latency-cl34-desktop-memory-black/p/N82E16820374762',
+    {
+      price: '.product-buy-box .price-current_2026',
+      availability: '.product-buy-box button.btn-primary',
+      title: 'h1.product-title',
+      seller: '.product-buy-box .product-seller-sold-by',
+    },
+  ],
+  [
+    'Amazon',
+    'https://www.amazon.com/dp/B0FFK132L2',
+    {
+      availability: '#availability',
+      title: '#productTitle',
+      seller: '#merchant-info',
+    },
+  ],
 ] as const;
 
-for (const [storeName, url, country] of examples) {
+for (const [storeName, url, selectors] of verifiedUsSources) {
   await prisma.productSource.upsert({
     where: { url },
-    update: {},
+    update: {
+      productId: product.id,
+      storeName,
+      selectors,
+      scraperType: 'STATIC',
+      enabled: true,
+    },
     create: {
       productId: product.id,
       storeName,
       url,
-      country,
+      country: 'US',
       currency: 'USD',
       scraperType: 'STATIC',
-      enabled: false,
-      selectors: { price: '.EXAMPLE-price', availability: '.EXAMPLE-availability' },
+      enabled: true,
+      selectors,
       metadata: {
-        warning:
-          'EXAMPLE ONLY: replace URL and selectors after inspecting the site and its terms. Not guaranteed.',
+        notes: 'Modelo y selectores verificados manualmente el 2026-07-24.',
       },
     },
   });
