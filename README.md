@@ -3,6 +3,12 @@
 Servicio para monitorear precio, stock y salud de páginas de hardware. La primera configuración
 incluye la memoria G.Skill `F5-6000J3444F64GX2-TZ5NR`, pero el dominio admite cualquier categoría.
 
+## Documentación
+
+- [Guía de instalación](docs/INSTALLATION.md)
+- [Guía de usuario y operación](docs/USER_GUIDE.md)
+- OpenAPI interactivo: `http://localhost:3000/docs` con la aplicación en ejecución.
+
 ## Arquitectura
 
 Fastify expone la API y reutiliza `CheckService` tanto para checks manuales como para cron. El
@@ -54,7 +60,7 @@ Swagger queda en `http://localhost:3000/docs`. Salud y disponibilidad están en 
 ```bash
 cp .env.example .env
 docker compose up --build
-docker compose exec app npm run prisma:seed
+docker compose exec app npx --yes tsx prisma/seed.ts
 ```
 
 El contenedor ejecuta `prisma db push --skip-generate` antes de arrancar para facilitar la primera
