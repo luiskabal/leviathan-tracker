@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProductCategory {
+  MEMORY
+  CPU
+  GPU
+  MOTHERBOARD
+  SSD
+  PSU
+  CASE
+  MONITOR
+  OTHER
+}
+
+enum ScraperType {
+  STATIC
+  PLAYWRIGHT
+}
+
+enum CheckStatus {
+  SUCCESS
+  FAILED
+  BLOCKED
+}
+
+enum AlertRuleType {
+  IN_STOCK
+  PRICE_BELOW
+  PRICE_CHANGE_PERCENT
+  CHECK_FAILURE
+}
+
+enum NotificationChannelType {
+  DISCORD
+  EMAIL
+  TELEGRAM
+  WEBHOOK
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  SKIPPED
+}
+
+model Product {
+  id          String          @id @default(cuid())
+  name        String
+  brand       String?
+  model       String          @unique
+  category    ProductCategory @default(OTHER)
+  description String?
+  targetPrice Decimal?        @db.Decimal(14, 2)
+  currency    String          @default("USD")
+  enabled     Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  sources     ProductSource[]
+  alertRules  AlertRule[]
+  events      NotificationEvent[]
+
+  @@index([enabled, category])
+}
+
+model ProductSource {
+  id        String       @id @default(cuid())
+  productId String
+  storeName String
+  url       String       @unique
+  country   String
+  currency  String
+  scraperType ScraperType
+  enabled   Boolean      @default(true)
+  selectors Json
+  metadata  Json?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  product   Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  checks    ProductCheck[]
+  events    NotificationEvent[]
+
+  @@index([productId, enabled])
+}
+
+model ProductCheck {
+  id              String      @id @default(cuid())
+  productSourceId String
+  checkedAt       DateTime    @default(now())
+  status          CheckStatus
+  available       Boolean?
+  price           Decimal?    @db.Decimal(14, 2)
+  currency        String?
+  seller          String?
+  rawAvailability String?
+  errorMessage    String?
+  durationMs      Int
+  contentHash     String?
+  productSource   ProductSource @relation(fields: [productSourceId], references: [id], onDelete: Cascade)
+
+  @@index([productSourceId, checkedAt(sort: Desc)])
+  @@index([status, checkedAt])
+}
+
+model AlertRule {
+  id              String        @id @default(cuid())
+  productId       String
+  type            AlertRuleType
+  targetValue     Decimal?      @db.Decimal(14, 4)
+  enabled         Boolean       @default(true)
+  cooldownMinutes Int           @default(60)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  product         Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  events          NotificationEvent[]
+
+  @@index([productId, enabled])
+}
+
+model NotificationChannel {
+  id            String                  @id @default(cuid())
+  type          NotificationChannelType
+  name          String
+  enabled       Boolean                 @default(true)
+  configuration Json
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+  events        NotificationEvent[]
+}
+
+model NotificationEvent {
+  id              String             @id @default(cuid())
+  productId       String
+  productSourceId String
+  alertRuleId     String
+  channelId       String
+  status          NotificationStatus
+  message         String
+  sentAt          DateTime?
+  errorMessage    String?
+  createdAt       DateTime           @default(now())
+  product         Product            @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productSource   ProductSource      @relation(fields: [productSourceId], references: [id], onDelete: Cascade)
+  alertRule       AlertRule          @relation(fields: [alertRuleId], references: [id], onDelete: Cascade)
+  channel         NotificationChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@index([alertRuleId, productSourceId, createdAt(sort: Desc)])
+  @@index([status, createdAt])
+}

@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+.env
+playwright-report
+test-results
+.tools
+.runtime
+start-tracker.cmd
