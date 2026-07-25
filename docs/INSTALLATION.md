@@ -58,6 +58,9 @@ JOB_API_TOKEN=reemplace-por-un-token-aleatorio-de-al-menos-16-caracteres
 DISCORD_WEBHOOK_URL=
 ```
 
+Consulte la [referencia completa de variables](ENVIRONMENT.md), que incluye una plantilla lista
+para copiar, generación de secretos y diferencias entre Docker y ejecución local.
+
 Variables principales:
 
 | Variable | Propósito | Valor inicial |

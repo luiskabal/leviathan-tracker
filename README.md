@@ -7,6 +7,7 @@ incluye la memoria G.Skill `F5-6000J3444F64GX2-TZ5NR`, pero el dominio admite cu
 
 - [Guía de instalación](docs/INSTALLATION.md)
 - [Guía de usuario y operación](docs/USER_GUIDE.md)
+- [Variables de entorno](docs/ENVIRONMENT.md)
 - OpenAPI interactivo: `http://localhost:3000/docs` con la aplicación en ejecución.
 
 ## Arquitectura
